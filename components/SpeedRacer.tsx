@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Car, AlertTriangle } from 'lucide-react';
+import { Play, Car, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { VOCABULARY } from '../constants';
 import { speak } from '../services/audioService';
 
@@ -22,13 +22,12 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
   const [displayTarget, setDisplayTarget] = useState(VOCABULARY[0]); // For UI rendering
   const [score, setScore] = useState(0);
   const [obstacles, setObstacles] = useState<Obstacle[]>([]);
-  const [gameOver, setGameOver] = useState(false);
   
-  // Mutable state for the game loop to avoid closure staleness and re-render loops
+  // Mutable state for the game loop
   const gameState = useRef({
     lane: 1 as 0 | 1 | 2,
     score: 0,
-    speed: 0.4, // Starting speed - VERY SLOW
+    speed: 0.4, 
     lastSpawnTime: 0,
     target: VOCABULARY[0],
     frameId: 0,
@@ -37,7 +36,6 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
 
   const startGame = () => {
     setIsPlaying(true);
-    setGameOver(false);
     setScore(0);
     setObstacles([]);
     
@@ -46,7 +44,7 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
     gameState.current = {
       lane: 1,
       score: 0,
-      speed: 0.4, // Start very slow
+      speed: 0.4,
       lastSpawnTime: Date.now(),
       target: startWord,
       frameId: 0,
@@ -56,7 +54,6 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
     setPlayerLane(1);
     setDisplayTarget(startWord);
     
-    // Start Loop
     cancelAnimationFrame(gameState.current.frameId);
     loop();
   };
@@ -65,35 +62,29 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
     const now = Date.now();
     const newObstacles: Obstacle[] = [];
     
-    // 1. Pick Correct Lane
     const lanes = [0, 1, 2] as const;
     const correctLane = lanes[Math.floor(Math.random() * lanes.length)];
     
-    // 2. Add Correct Answer
     newObstacles.push({
       id: now, 
       lane: correctLane,
-      y: -80, // Start slightly above view
+      y: -80, 
       word: gameState.current.target.english,
       isCorrect: true
     });
 
-    // 3. Pick Distractor Lane (Ensure it's different from correct lane)
-    // We only add 1 distractor now, so there is always 1 empty lane
     const availableLanes = lanes.filter(l => l !== correctLane);
     const distractorLane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
 
-    // 4. Find Distractor Word
     let wrong = VOCABULARY[Math.floor(Math.random() * VOCABULARY.length)];
     let attempts = 0;
-    // Ensure we don't pick the correct word
     while ((wrong.english === gameState.current.target.english) && attempts < 10) {
       wrong = VOCABULARY[Math.floor(Math.random() * VOCABULARY.length)];
       attempts++;
     }
 
     newObstacles.push({
-      id: now + 1, // Unique ID
+      id: now + 1,
       lane: distractorLane,
       y: -80,
       word: wrong.english,
@@ -114,44 +105,36 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
 
     const now = Date.now();
     
-    // 1. Spawning Logic
-    // Only spawn if enough time passed
+    // 1. Spawning
     if (now - gameState.current.lastSpawnTime > 3500) {
       spawnRow();
       gameState.current.lastSpawnTime = now;
-      // Increase speed very slowly, cap at 1.5 (very manageable)
       gameState.current.speed = Math.min(gameState.current.speed + 0.02, 1.5);
     }
 
     // 2. Update Obstacles & Collision
     setObstacles(prevObstacles => {
-      const carYStart = 380; // Hitbox top
-      const carYEnd = 480;   // Hitbox bottom
+      const carYStart = 380; 
+      const carYEnd = 480;   
       
       return prevObstacles
         .map(obs => {
-          // If already hit, don't move, just return
           if (obs.hit) return obs;
 
-          // Move down
           const newY = obs.y + gameState.current.speed;
-
-          // Check Collision
           let hitType: 'correct' | 'incorrect' | undefined = undefined;
 
-          // Check if obstacle is in player lane and overlapping vertically
           if (
             obs.lane === gameState.current.lane &&
             newY > carYStart &&
             newY < carYEnd
           ) {
-            // Collision!
             if (obs.isCorrect) {
               hitType = 'correct';
               speak("Good job!");
               gameState.current.score += 10;
               setScore(gameState.current.score);
-              pickNewTarget(); // Switch target immediately
+              pickNewTarget(); 
             } else {
               hitType = 'incorrect';
               speak("Try again");
@@ -175,23 +158,16 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isPlaying) return;
-      
       if (e.key === 'ArrowRight') {
-        const newLane = Math.min(2, gameState.current.lane + 1) as 0|1|2;
-        gameState.current.lane = newLane;
-        setPlayerLane(newLane);
+        moveLane('right');
       } else if (e.key === 'ArrowLeft') {
-        const newLane = Math.max(0, gameState.current.lane - 1) as 0|1|2;
-        gameState.current.lane = newLane;
-        setPlayerLane(newLane);
+        moveLane('left');
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isPlaying]);
 
-  // Touch controls
   const moveLane = (direction: 'left' | 'right') => {
     if (!isPlaying) return;
     if (direction === 'right') {
@@ -205,7 +181,13 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
     }
   };
 
-  // Cleanup loop on unmount
+  const handleTouch = (direction: 'left' | 'right', e: React.TouchEvent | React.MouseEvent) => {
+    // Prevent default to stop scrolling or double-firing events
+    // Note: e.preventDefault() might need passive: false listener if attached manually, 
+    // but in React 'touch-action: none' CSS is preferred.
+    moveLane(direction);
+  };
+
   useEffect(() => {
     return () => cancelAnimationFrame(gameState.current.frameId);
   }, []);
@@ -213,21 +195,24 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
   return (
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto p-4 select-none">
        <div className="flex items-center justify-between w-full mb-4">
-        <h2 className="text-3xl font-bold text-orange-600">מירוץ המילים (Racer)</h2>
+        <h2 className="text-3xl font-bold text-orange-600 hidden md:block">מירוץ המילים (Racer)</h2>
+        <h2 className="text-2xl font-bold text-orange-600 md:hidden">מירוץ המילים</h2>
          <div className="flex gap-4">
            <div className="text-2xl font-bold">ניקוד: {score}</div>
-           <button onClick={onBack} className="bg-gray-200 px-4 py-2 rounded-lg font-bold">יציאה</button>
+           <button onClick={onBack} className="bg-gray-200 px-4 py-2 rounded-lg font-bold flex items-center gap-2">
+             <ArrowLeft size={20}/>
+             <span className="hidden md:inline">יציאה</span>
+           </button>
         </div>
       </div>
 
       {!isPlaying ? (
-         <div className="bg-white p-8 rounded-xl shadow-xl text-center border-4 border-orange-100 max-w-lg">
+         <div className="bg-white p-6 md:p-8 rounded-xl shadow-xl text-center border-4 border-orange-100 max-w-lg w-full">
           <p className="text-xl mb-4 font-bold">הוראות המשחק:</p>
           <ul className="text-right list-disc list-inside mb-6 space-y-2 text-lg">
-            <li>למעלה מופיעה מילה בעברית (למשל: "בית").</li>
-            <li>מילים באנגלית נופלות (רק 2 בכל שורה).</li>
-            <li>הזז את המכונית לנתיב עם המילה הנכונה!</li>
-            <li>היזהר! יש נתיב אחד ריק שאפשר לברוח אליו.</li>
+            <li>המילה בעברית למעלה.</li>
+            <li>סע לנתיב עם המילה באנגלית.</li>
+            <li>היזהר! יש נתיב אחד ריק.</li>
           </ul>
           <button 
             onClick={startGame}
@@ -238,13 +223,16 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
           </button>
         </div>
       ) : (
-        <div className="relative w-full h-[500px] bg-slate-700 overflow-hidden rounded-xl border-4 border-slate-800 shadow-2xl">
+        <div 
+          className="relative w-full h-[500px] bg-slate-700 overflow-hidden rounded-xl border-4 border-slate-800 shadow-2xl touch-none"
+          style={{ touchAction: 'none' }}
+        >
           {/* Road Markings */}
           <div className="absolute top-0 bottom-0 left-1/3 w-2 bg-dashed border-l-2 border-white opacity-30"></div>
           <div className="absolute top-0 bottom-0 right-1/3 w-2 bg-dashed border-l-2 border-white opacity-30"></div>
 
           {/* Target Word Display */}
-          <div className="absolute top-4 left-0 right-0 z-20 flex justify-center">
+          <div className="absolute top-4 left-0 right-0 z-20 flex justify-center pointer-events-none">
              <div className="bg-orange-500 text-white px-8 py-3 rounded-full border-4 border-white shadow-xl text-3xl font-bold animate-pulse">
                {displayTarget.hebrew}
              </div>
@@ -254,7 +242,7 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
           {obstacles.map(obs => (
             <div
               key={obs.id}
-              className="absolute w-1/3 flex justify-center items-center transition-none"
+              className="absolute w-1/3 flex justify-center items-center transition-none pointer-events-none"
               style={{ 
                 top: `${obs.y}px`, 
                 left: `${obs.lane * 33.33}%`,
@@ -262,7 +250,7 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
               }}
             >
               <div className={`
-                w-10/12 py-3 rounded-xl font-bold text-xl shadow-lg border-b-4 text-center
+                w-10/12 py-3 rounded-xl font-bold text-lg md:text-xl shadow-lg border-b-4 text-center whitespace-nowrap overflow-hidden
                 ${obs.hit === 'correct' 
                   ? 'bg-green-500 text-white border-green-700 scale-110' 
                   : obs.hit === 'incorrect' 
@@ -278,7 +266,7 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
 
           {/* Player Car */}
           <div 
-            className="absolute bottom-4 w-1/3 flex justify-center transition-all duration-200 ease-out"
+            className="absolute bottom-16 w-1/3 flex justify-center transition-all duration-200 ease-out pointer-events-none"
             style={{ left: `${playerLane * 33.33}%` }}
           >
              <div className="text-orange-400 drop-shadow-2xl filter">
@@ -286,10 +274,26 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
              </div>
           </div>
           
-          {/* Touch Controls Overlay */}
+          {/* Touch Controls Overlay - Explicit Zones */}
           <div className="absolute bottom-0 left-0 right-0 h-full z-30 flex">
-             <div className="w-1/2 h-full active:bg-white/5 transition-colors" onClick={() => moveLane('left')}></div>
-             <div className="w-1/2 h-full active:bg-white/5 transition-colors" onClick={() => moveLane('right')}></div>
+             <div 
+                className="w-1/2 h-full flex items-end pb-4 pl-4 active:bg-white/10 transition-colors"
+                onTouchStart={(e) => handleTouch('right', e)}
+                onClick={(e) => handleTouch('right', e)}
+             >
+                <div className="bg-black/20 p-4 rounded-full text-white backdrop-blur-sm">
+                   <ChevronRight size={40} />
+                </div>
+             </div>
+             <div 
+                className="w-1/2 h-full flex items-end justify-end pb-4 pr-4 active:bg-white/10 transition-colors"
+                onTouchStart={(e) => handleTouch('left', e)}
+                onClick={(e) => handleTouch('left', e)}
+             >
+                <div className="bg-black/20 p-4 rounded-full text-white backdrop-blur-sm">
+                   <ChevronLeft size={40} />
+                </div>
+             </div>
           </div>
         </div>
       )}
