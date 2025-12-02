@@ -86,7 +86,7 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
     newObstacles.push({
       id: now + 1,
       lane: distractorLane,
-      y: -80,
+      y: -80, 
       word: wrong.english,
       isCorrect: false
     });
@@ -181,10 +181,9 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
     }
   };
 
-  const handleTouch = (direction: 'left' | 'right', e: React.TouchEvent | React.MouseEvent) => {
-    // Prevent default to stop scrolling or double-firing events
-    // Note: e.preventDefault() might need passive: false listener if attached manually, 
-    // but in React 'touch-action: none' CSS is preferred.
+  const handlePointerDown = (direction: 'left' | 'right', e: React.PointerEvent | React.MouseEvent) => {
+    // Prevent default to avoid double-firing on touch devices (touch + simulated click)
+    e.preventDefault();
     moveLane(direction);
   };
 
@@ -277,20 +276,18 @@ const SpeedRacer: React.FC<SpeedRacerProps> = ({ onBack }) => {
           {/* Touch Controls Overlay - Explicit Zones */}
           <div className="absolute bottom-0 left-0 right-0 h-full z-30 flex">
              <div 
-                className="w-1/2 h-full flex items-end pb-4 pl-4 active:bg-white/10 transition-colors"
-                onTouchStart={(e) => handleTouch('right', e)}
-                onClick={(e) => handleTouch('right', e)}
+                className="w-1/2 h-full flex items-end pb-4 pl-4 active:bg-white/10 transition-colors cursor-pointer"
+                onPointerDown={(e) => handlePointerDown('right', e)}
              >
-                <div className="bg-black/20 p-4 rounded-full text-white backdrop-blur-sm">
+                <div className="bg-black/20 p-4 rounded-full text-white backdrop-blur-sm pointer-events-none">
                    <ChevronRight size={40} />
                 </div>
              </div>
              <div 
-                className="w-1/2 h-full flex items-end justify-end pb-4 pr-4 active:bg-white/10 transition-colors"
-                onTouchStart={(e) => handleTouch('left', e)}
-                onClick={(e) => handleTouch('left', e)}
+                className="w-1/2 h-full flex items-end justify-end pb-4 pr-4 active:bg-white/10 transition-colors cursor-pointer"
+                onPointerDown={(e) => handlePointerDown('left', e)}
              >
-                <div className="bg-black/20 p-4 rounded-full text-white backdrop-blur-sm">
+                <div className="bg-black/20 p-4 rounded-full text-white backdrop-blur-sm pointer-events-none">
                    <ChevronLeft size={40} />
                 </div>
              </div>
