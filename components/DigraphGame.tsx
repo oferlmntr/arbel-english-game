@@ -52,7 +52,7 @@ const DigraphGame: React.FC<DigraphGameProps> = ({ onBack }) => {
       <div className="bg-white rounded-2xl shadow-xl p-8 border-4 border-purple-100">
         <div className="mb-4 text-2xl text-gray-500">{currentWord.hebrew}</div>
         
-        <div className="text-6xl font-bold text-slate-800 mb-12 tracking-wider">
+        <div className="text-6xl font-bold text-slate-800 mb-12 tracking-wider" dir="ltr">
           {feedback === 'correct' ? (
             <span className="text-green-600 animate-pulse">{currentWord.english}</span>
           ) : (
