@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ArrowLeft, BookOpen, CheckCircle, XCircle, Volume2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { READING_PASSAGES } from '../constants';
 import { speak } from '../services/audioService';
@@ -14,6 +14,11 @@ const ComprehensionGame: React.FC<ComprehensionGameProps> = ({ onBack }) => {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
+
+  // Calculate maximum possible score
+  const maxScore = useMemo(() => {
+    return READING_PASSAGES.reduce((total, passage) => total + passage.questions.length, 0) * 10;
+  }, []);
 
   const currentPassage = READING_PASSAGES[passageIndex];
   const currentQuestion = currentPassage.questions[questionIndex];
@@ -72,7 +77,9 @@ const ComprehensionGame: React.FC<ComprehensionGameProps> = ({ onBack }) => {
         <div className="bg-white p-8 rounded-2xl shadow-xl text-center border-4 border-indigo-100 w-full animate-in zoom-in">
           <h2 className="text-4xl font-bold text-indigo-600 mb-6">סיימת את כל הסיפורים!</h2>
           <div className="text-6xl mb-6">🏆</div>
-          <p className="text-2xl font-bold text-slate-700 mb-8">הניקוד שלך: {score}</p>
+          <p className="text-2xl font-bold text-slate-700 mb-8">
+            הניקוד שלך: <span className="text-indigo-600">{score}</span> מתוך <span className="text-slate-500">{maxScore}</span>
+          </p>
           <div className="flex flex-col gap-4">
             <button 
               onClick={restartGame}
@@ -116,8 +123,8 @@ const ComprehensionGame: React.FC<ComprehensionGameProps> = ({ onBack }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        {/* Reading Passage Area */}
-        <div className="bg-white p-6 rounded-2xl shadow-lg border-2 border-indigo-100">
+        {/* Reading Passage Area - Force LTR for English content */}
+        <div className="bg-white p-6 rounded-2xl shadow-lg border-2 border-indigo-100 text-left" dir="ltr">
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-2xl font-bold text-slate-800">{currentPassage.title}</h3>
             <button 
