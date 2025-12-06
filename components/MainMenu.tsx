@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Gamepad2, Brain, Zap, Target, Combine, ScrollText } from 'lucide-react';
+import { BookOpen, Gamepad2, Brain, Zap, Target, Combine, ScrollText, BookOpenText } from 'lucide-react';
 import { GameType } from '../types';
 
 interface MainMenuProps {
@@ -9,7 +9,8 @@ interface MainMenuProps {
 const MainMenu: React.FC<MainMenuProps> = ({ onSelectGame }) => {
   const games = [
     { id: GameType.WORD_LIST, title: 'רשימת מילים', desc: 'ללמוד ולהקשיב למילים', icon: <BookOpen size={32} />, color: 'bg-blue-500' },
-    { id: GameType.STORY, title: 'סיפורים', desc: 'השלם את המילה החסרה', icon: <ScrollText size={32} />, color: 'bg-teal-500' },
+    { id: GameType.COMPREHENSION, title: 'הבנת הנקרא', desc: 'קרא סיפורים וענה על שאלות', icon: <BookOpenText size={32} />, color: 'bg-indigo-600' },
+    { id: GameType.STORY, title: 'השלמת סיפורים', desc: 'השלם את המילה החסרה', icon: <ScrollText size={32} />, color: 'bg-teal-500' },
     { id: GameType.MEMORY, title: 'משחק הזיכרון', desc: 'מצא זוגות תואמים', icon: <Brain size={32} />, color: 'bg-green-500' },
     { id: GameType.DIGRAPHS, title: 'אותיות חסרות', desc: 'השלם את הצירוף (ch, sh...)', icon: <Gamepad2 size={32} />, color: 'bg-purple-500' },
     { id: GameType.SHOOTER, title: 'מטווח מילים', desc: 'פוצץ את המילה הנכונה', icon: <Target size={32} />, color: 'bg-red-500' },

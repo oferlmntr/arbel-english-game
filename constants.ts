@@ -109,3 +109,98 @@ export const STORIES: Story[] = [
     ]
   }
 ];
+
+export interface ReadingQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number; // index
+}
+
+export interface ReadingPassage {
+  id: string;
+  title: string;
+  text: string;
+  questions: ReadingQuestion[];
+}
+
+export const READING_PASSAGES: ReadingPassage[] = [
+  {
+    id: 'brawl-stars',
+    title: 'Brawl Stars at School',
+    text: `My name is Leon. I am in grade 4. I go to school with my friend, Spike. 
+    
+In the bag, I have a notebook and a pencil. I do not have a book. 
+The teacher says: "Leon, where is your homework?" 
+I say: "I don't have homework. I have a new game on my phone. It is Brawl Stars!" 
+The teacher is not happy.`,
+    questions: [
+      {
+        question: "מי החבר של ליאון?",
+        options: ["המורה", "ספייק (Spike)", "דני"],
+        correctAnswer: 1
+      },
+      {
+        question: "מה אין לליאון בתיק?",
+        options: ["עיפרון (Pencil)", "מחברת (Notebook)", "ספר (Book)"],
+        correctAnswer: 2
+      },
+      {
+        question: "מדוע המורה לא שמחה?",
+        options: ["כי ליאון משחק בראול סטארס ואין לו שיעורים", "כי ליאון אכל את הארוחה", "כי ליאון איבד את העיפרון"],
+        correctAnswer: 0
+      }
+    ]
+  },
+  {
+    id: 'stitch',
+    title: 'Stitch is Hungry',
+    text: `Look at Stitch. Stitch is in the house. He is very hungry.
+He goes to the kitchen. He sees a fish. "Yuck!" says Stitch. "I don't like fish."
+He sees a notebook. "Yum!" says Stitch. He eats the notebook.
+Then, he eats a chair and a math book.
+Oh no! Stitch, that is not lunch!`,
+    questions: [
+      {
+        question: "איפה סטיץ' נמצא?",
+        options: ["בבית הספר (School)", "בבית (House)", "בחנות (Shop)"],
+        correctAnswer: 1
+      },
+      {
+        question: "מה סטיץ' לא רוצה לאכול?",
+        options: ["דג (Fish)", "כיסא (Chair)", "ספר (Book)"],
+        correctAnswer: 0
+      },
+      {
+        question: "מה סטיץ' אוכל בסוף?",
+        options: ["פיצה", "דג", "כיסא וספר חשבון"],
+        correctAnswer: 2
+      }
+    ]
+  },
+  {
+    id: 'roblox',
+    title: 'My Roblox Town',
+    text: `I live in a town called Brookhaven in Roblox. It is a new town.
+I have a big house. In my house, I have a cool room.
+I need to go to the shop. "Let's go," I say to my brother.
+In the shop, I buy a new paper and a pencil.
+Now I can do my homework in the game!`,
+    questions: [
+      {
+        question: "איך קוראים לעיר בסיפור?",
+        options: ["תל אביב", "Brookhaven", "Brawl Town"],
+        correctAnswer: 1
+      },
+      {
+        question: "עם מי הוא הולך לחנות?",
+        options: ["עם המורה (Teacher)", "עם החבר (Friend)", "עם האח (Brother)"],
+        correctAnswer: 2
+      },
+      {
+        question: "מה הוא קונה בחנות?",
+        options: ["נייר ועיפרון", "מחשב חדש", "פיצה"],
+        correctAnswer: 0
+      }
+    ]
+  }
+];

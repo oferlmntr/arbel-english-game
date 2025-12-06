@@ -13,7 +13,8 @@ export enum GameType {
   SHOOTER = 'SHOOTER',
   RACER = 'RACER',
   MATCH = 'MATCH',
-  STORY = 'STORY'
+  STORY = 'STORY',
+  COMPREHENSION = 'COMPREHENSION'
 }
 
 export interface GameState {

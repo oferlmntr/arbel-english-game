@@ -7,6 +7,7 @@ import WordShooter from './components/WordShooter';
 import SpeedRacer from './components/SpeedRacer';
 import MatchMaster from './components/MatchMaster';
 import StoryGame from './components/StoryGame';
+import ComprehensionGame from './components/ComprehensionGame';
 import { GameType } from './types';
 
 function App() {
@@ -28,6 +29,8 @@ function App() {
         return <MatchMaster onBack={() => setActiveGame(GameType.MENU)} />;
       case GameType.STORY:
         return <StoryGame onBack={() => setActiveGame(GameType.MENU)} />;
+      case GameType.COMPREHENSION:
+        return <ComprehensionGame onBack={() => setActiveGame(GameType.MENU)} />;
       default:
         return <MainMenu onSelectGame={setActiveGame} />;
     }
