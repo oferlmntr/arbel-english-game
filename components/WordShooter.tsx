@@ -29,6 +29,7 @@ const WordShooter: React.FC<WordShooterProps> = ({ onBack }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [score, setScore] = useState(0);
   const [targetWord, setTargetWord] = useState(VOCABULARY[0]);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
   
   const gameState = useRef({
     playerX: 300,
@@ -41,6 +42,26 @@ const WordShooter: React.FC<WordShooterProps> = ({ onBack }) => {
     frameId: 0
   });
 
+  // Handle responsive resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        // Mobile: maximize height, fit width
+        // Calculate available height: Window height - header approx (100px) - padding (32px)
+        const newHeight = window.innerHeight - 160;
+        const newWidth = window.innerWidth - 32;
+        setDimensions({ width: newWidth, height: newHeight });
+      } else {
+        // Desktop: fixed size
+        setDimensions({ width: 800, height: 500 });
+      }
+    };
+
+    handleResize(); // Initial calculation
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const pickNewTarget = () => {
     const random = VOCABULARY[Math.floor(Math.random() * VOCABULARY.length)];
     setTargetWord(random);
@@ -50,7 +71,7 @@ const WordShooter: React.FC<WordShooterProps> = ({ onBack }) => {
   const startGame = () => {
     setScore(0);
     gameState.current = {
-      playerX: 300, 
+      playerX: dimensions.width / 2, 
       bullets: [],
       words: [],
       score: 0,
@@ -77,9 +98,13 @@ const WordShooter: React.FC<WordShooterProps> = ({ onBack }) => {
       wordText = wrong.english;
     }
 
-    // Increased margin to 120px to prevent long words from clipping edges
+    // Dynamic margins based on canvas width
+    // On mobile (narrow), we need smaller margins
+    const margin = canvasWidth < 500 ? 50 : 120;
+    const playArea = canvasWidth - (margin * 2);
+
     gameState.current.words.push({
-      x: Math.random() * (canvasWidth - 240) + 120,
+      x: Math.random() * playArea + margin,
       y: -30,
       word: wordText,
       isCorrect: isCorrect,
@@ -250,12 +275,12 @@ const WordShooter: React.FC<WordShooterProps> = ({ onBack }) => {
           </button>
         </div>
       ) : (
-        <div className="relative w-full">
+        <div className="relative w-full flex justify-center">
           <canvas
             ref={canvasRef}
-            width={800}
-            height={500}
-            className="bg-slate-800 rounded-xl shadow-2xl cursor-crosshair w-full h-auto touch-none"
+            width={dimensions.width}
+            height={dimensions.height}
+            className="bg-slate-800 rounded-xl shadow-2xl cursor-crosshair touch-none"
             style={{ touchAction: 'none' }} 
             onMouseMove={handleMouseMove}
             onMouseDown={handleShoot}
